@@ -19,28 +19,69 @@
 
 package com.robut.rokrcsrv;
 
+import com.robut.rirc.IRCConnection;
+import com.robut.rirc.PrivMsg;
+import com.robut.markov.MarkovChain;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class RRCServer {
     private Socket sock;
     private BufferedReader sockIn;
     private DataOutputStream sockOut;
 
+    private IRCConnection conn;
+    private ArrayList<MarkovChain> chains;
+    private String dbDir;
 
+    private String server;
 
     public RRCServer(){
 
     }
 
-    public void Listen(int port) throws IOException{
+    public RRCServer(String dbDirectory){
+        this.dbDir = dbDirectory;
+    }
+
+    public void listen(int port, String bindAddress) throws IOException {
         ServerSocket listener = new ServerSocket(port);
         this.sock = listener.accept();
         this.sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         this.sockOut = new DataOutputStream(sock.getOutputStream());
+    }
+
+    public void listen(int port) throws IOException {
+        listen(port, "0.0.0.0");
+    }
+
+    private void receiveMessage() throws IOException {
+        String msg = this.sockIn.readLine();
+
+
+    }
+
+    private void sendMessage(String msg) throws IOException {
+        if (msg.contains("\r\n")){
+            throw new IOException("Message contains newline characters.");
+        }
+
+        this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
+    }
+
+    private void loop() throws IOException{
+        while(true){
+            receiveMessage();
+        }
+    }
+
+    private void handleJoin(String server, String channel){
+
     }
 }

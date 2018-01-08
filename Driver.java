@@ -19,8 +19,21 @@
 
 import com.robut.rokrcsrv.RRCServer;
 
+import java.io.IOException;
+
 public class Driver {
-    public static void Main(String[] args){
-        RRCServer srv = new RRCServer();
+    public static void main(String[] args){
+        int port = Integer.parseInt(args[0]);
+        String dbDirectory = args[1];
+
+        RRCServer srv = new RRCServer(dbDirectory);
+        try {
+            srv.listen(port, "127.0.0.1");
+        }
+        catch (IOException e){
+            System.err.printf("Exception trying to listen on port %d: %s%n", port, e);
+        }
+
+
     }
 }
