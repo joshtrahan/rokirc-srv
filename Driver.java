@@ -51,6 +51,9 @@ public class Driver {
 
             listenToChannel(server, port, username, auth, channels, dbDir);
         }
+        else{
+            System.out.printf("Usage: java Driver server port channel%n");
+        }
     }
 
     public static void listenToChannel(String server, int port, String username, String auth, String[] channels,
