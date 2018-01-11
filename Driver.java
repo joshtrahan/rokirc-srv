@@ -17,23 +17,79 @@
 
  */
 
-import com.robut.rokrcsrv.RRCServer;
+import com.robut.rirc.IRCConnection;
+import com.robut.rirc.PrivMsg;
+import com.robut.markov.MarkovChain;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class Driver {
     public static void main(String[] args){
-        int port = Integer.parseInt(args[0]);
-        String dbDirectory = args[1];
+        if (args.length > 2){
+            String server = args[0];
+            int port = Integer.parseInt(args[1]);
+            String username;
+            String auth;
+            String[] channels = Arrays.copyOfRange(args, 2, args.length);
 
-        RRCServer srv = new RRCServer(dbDirectory);
+            try (BufferedReader credFile = new BufferedReader(new FileReader("resources/creds.txt"))) {
+                username = credFile.readLine();
+                auth = credFile.readLine();
+                credFile.close();
+            } catch (Exception e) {
+                System.err.printf("Exception reading credentials: %s%n", e);
+                return;
+            }
+
+            File dbDir = new File("dbs");
+            dbDir.mkdirs();
+
+            listenToChannel(server, port, username, auth, channels, dbDir);
+        }
+    }
+
+    public static void listenToChannel(String server, int port, String username, String auth, String[] channels,
+                                       File dbDir){
+        HashMap<String, MarkovChain> chains = new HashMap<>();
+
+        for (String chan : channels){
+            try {
+                File dbPath = new File(dbDir.getCanonicalPath() + "/" + chan + ".sqlite3");
+                chains.put(chan, new MarkovChain(dbPath.getCanonicalPath()));
+            }
+            catch (IOException e){
+                System.err.printf("Error resolving path %s: %s%n", dbDir, e);
+                return;
+            }
+        }
+
+        IRCConnection conn = new IRCConnection(server, port, username, auth, Arrays.asList(channels));
         try {
-            srv.listen(port, "127.0.0.1");
+            conn.connect();
         }
         catch (IOException e){
-            System.err.printf("Exception trying to listen on port %d: %s%n", port, e);
+            System.err.printf("Error connecting to server %s: %s%n", server, e);
         }
 
+        while (true){
+            PrivMsg newMsg;
+            try{
+                newMsg = conn.getMessage();
+            }
+            catch(Exception e) {
+                System.err.printf("Error getting privmsg: %s%n", e);
+                continue;
+            }
 
+            System.out.printf("%s%n", newMsg);
+
+            chains.get(newMsg.getChannel()).parseString(newMsg.getMessage());
+            chains.get(newMsg.getChannel()).saveToDisk();
+        }
     }
 }
