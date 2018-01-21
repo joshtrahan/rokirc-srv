@@ -19,23 +19,20 @@
 
 package com.robut.rokrcsrv;
 
-import com.robut.rirc.Client;
+import com.robut.rirc.IRCClient;
 import com.robut.markov.MarkovChain;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class Server {
-    private Socket sock;
-    private BufferedReader sockIn;
-    private DataOutputStream sockOut;
+    private String bindAddr;
+    private int port;
 
-    private Client conn;
+    private IRCClient ircClient;
     private ArrayList<MarkovChain> chains;
     private String dbDir;
 
@@ -45,42 +42,28 @@ public class Server {
 
     }
 
-    public Server(String dbDirectory){
+    public Server(String bindAddress, int port, String dbDirectory){
         this.dbDir = dbDirectory;
+        this.bindAddr = bindAddress;
+        this.port = port;
     }
 
-    public void listen(int port, String bindAddress) throws IOException {
-        ServerSocket listener = new ServerSocket(port);
-        this.sock = listener.accept();
-        this.sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-        this.sockOut = new DataOutputStream(sock.getOutputStream());
+    public Server(int port, String dbDirectory){
+        this("0.0.0.0", port, dbDirectory);
     }
 
-    public void listen(int port) throws IOException {
-        listen(port, "0.0.0.0");
-    }
+    public void listen() throws IOException {
+        ServerSocket listener = new ServerSocket(this.port);
+        System.out.printf("Listening on port %d binded on %s%n", this.port, this.bindAddr);
 
-    private void receiveMessage() throws IOException {
-        String msg = this.sockIn.readLine();
+        Socket controlSocket = listener.accept();
+        System.out.printf("Connection made to client at address %s%n", controlSocket.getInetAddress());
 
 
     }
 
-    private void sendMessage(String msg) throws IOException {
-        if (msg.contains("\r\n")){
-            throw new IOException("Message contains newline characters.");
-        }
-
-        this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
-    }
-
-    private void loop() throws IOException{
-        while(true){
-            receiveMessage();
-        }
-    }
-
-    private void handleJoin(String server, String channel){
-
+    public void startIrcClient(String server, int port, String nick, String auth, Collection<String> channels){
+        ircClient = new IRCClient(server, port, nick, auth, channels);
+        ircClient.start();
     }
 }
