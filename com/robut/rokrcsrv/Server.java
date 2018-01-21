@@ -19,8 +19,7 @@
 
 package com.robut.rokrcsrv;
 
-import com.robut.rirc.IRCConnection;
-import com.robut.rirc.PrivMsg;
+import com.robut.rirc.Client;
 import com.robut.markov.MarkovChain;
 
 import java.io.BufferedReader;
@@ -31,22 +30,22 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class RRCServer {
+public class Server {
     private Socket sock;
     private BufferedReader sockIn;
     private DataOutputStream sockOut;
 
-    private IRCConnection conn;
+    private Client conn;
     private ArrayList<MarkovChain> chains;
     private String dbDir;
 
     private String server;
 
-    public RRCServer(){
+    public Server(){
 
     }
 
-    public RRCServer(String dbDirectory){
+    public Server(String dbDirectory){
         this.dbDir = dbDirectory;
     }
 
