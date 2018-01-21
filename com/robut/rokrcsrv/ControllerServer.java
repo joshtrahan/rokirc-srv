@@ -28,7 +28,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class Server {
+public class ControllerServer {
     private String bindAddr;
     private int port;
 
@@ -38,17 +38,17 @@ public class Server {
 
     private String server;
 
-    public Server(){
+    public ControllerServer(){
 
     }
 
-    public Server(String bindAddress, int port, String dbDirectory){
+    public ControllerServer(String bindAddress, int port, String dbDirectory){
         this.dbDir = dbDirectory;
         this.bindAddr = bindAddress;
         this.port = port;
     }
 
-    public Server(int port, String dbDirectory){
+    public ControllerServer(int port, String dbDirectory){
         this("0.0.0.0", port, dbDirectory);
     }
 
