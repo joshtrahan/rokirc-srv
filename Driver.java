@@ -17,7 +17,7 @@
 
  */
 
-import com.robut.rirc.IRCConnection;
+import com.robut.rirc.Client;
 import com.robut.rirc.PrivMsg;
 import com.robut.markov.MarkovChain;
 
@@ -71,11 +71,11 @@ public class Driver {
             }
         }
 
-        IRCConnection conn = new IRCConnection(server, port, username, auth, Arrays.asList(channels));
+        Client conn = new Client(server, port, username, auth, Arrays.asList(channels));
         try {
-            conn.connect();
+            conn.start();
         }
-        catch (IOException e){
+        catch (Exception e){
             System.err.printf("Error connecting to server %s: %s%n", server, e);
         }
 
