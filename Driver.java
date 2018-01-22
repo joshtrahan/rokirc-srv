@@ -18,20 +18,43 @@
  */
 
 import com.robut.rokrcsrv.ControllerServer;
+import com.robut.rokrcsrv.IRCManager;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 public class Driver {
     public static void main(String[] args){
-        int port = Integer.parseInt(args[0]);
-        String dbDirectory = args[1];
+        if (args.length > 0) {
+            String server = args[0];
+            int port = Integer.parseInt(args[1]);
+            String[] channels = new String[0];
 
-        ControllerServer srv = new ControllerServer(dbDirectory);
-        try {
-            srv.listen(port, "127.0.0.1");
+            String userName;
+            String auth;
+
+            if (args.length > 2) {
+                channels = Arrays.copyOfRange(args, 2, args.length);
+            }
+
+            try (BufferedReader credFile = new BufferedReader(new FileReader("resources/creds.txt"))) {
+                userName = credFile.readLine();
+                auth = credFile.readLine();
+                credFile.close();
+            } catch (Exception e) {
+                System.err.printf("Exception reading credentials: %s%n", e);
+                return;
+            }
+
+            testIrcManager(server, port, userName, auth, Arrays.asList(channels));
         }
-        catch (IOException e){
-            System.err.printf("Exception trying to listen on port %d: %s%n", port, e);
-        }
+    }
+
+    public static void testIrcManager(String server, int port, String nick, String auth, Collection<String> channels){
+        IRCManager ircManager = new IRCManager("resources/dbs/");
+        ircManager.connectToIrcServer(server, port, nick, auth, channels);
     }
 }

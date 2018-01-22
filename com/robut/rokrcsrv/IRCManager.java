@@ -20,7 +20,7 @@ public class IRCManager {
         this("");
     }
 
-    public void connectToServer(String server, int port, String nick, String auth, Collection<String> channels){
+    public void connectToIrcServer(String server, int port, String nick, String auth, Collection<String> channels){
         if (!ircServers.containsKey(server)){
             MarkovPrivMsgHandler handler = new MarkovPrivMsgHandler(this.dbDir);
             serverMsgHandlers.put(server, handler);
@@ -29,16 +29,21 @@ public class IRCManager {
         }
     }
 
-    public void connectToServer(String server, int port, String nick, String auth){
-        connectToServer(server, port, nick, auth, new ArrayList<>());
+    public void connectToIrcServer(String server, int port, String nick, String auth){
+        connectToIrcServer(server, port, nick, auth, new ArrayList<>());
     }
 
-    public void joinChannel(String server, String channel){
+    public void joinChannel(String server, String channel) throws IOException{
         try {
             ircServers.get(server).joinChannel(channel);
         }
         catch (IOException e){
             System.err.printf("Error connecting to channel through rokrcsrv IRCManager: %s%n", e);
+            throw e;
         }
+    }
+
+    public String generateMarkovString(String server, String channel){
+        return serverMsgHandlers.get(server).generateMarkovMessage(channel);
     }
 }

@@ -26,44 +26,37 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class ControllerServer {
     private String bindAddr;
     private int port;
 
-    private IRCClient ircClient;
-    private ArrayList<MarkovChain> chains;
     private String dbDir;
 
-    private String server;
+    private IRCManager ircManager;
 
-    public ControllerServer(){
+    public ControllerServer(String bindAddress, int port){
+        this.bindAddr = bindAddress;
+        this.port = port;
 
+        this.ircManager = new IRCManager();
     }
 
-    public ControllerServer(String bindAddress, int port, String dbDirectory){
-        this.dbDir = dbDirectory;
+    public ControllerServer(String bindAddress, int port, IRCManager ircManager){
+        this.ircManager = ircManager;
         this.bindAddr = bindAddress;
         this.port = port;
     }
 
-    public ControllerServer(int port, String dbDirectory){
-        this("0.0.0.0", port, dbDirectory);
+    public ControllerServer(int port, IRCManager ircManager){
+        this("0.0.0.0", port, ircManager);
     }
 
-    public void listen() throws IOException {
+    public void startServer() throws IOException {
         ServerSocket listener = new ServerSocket(this.port);
         System.out.printf("Listening on port %d binded on %s%n", this.port, this.bindAddr);
 
         Socket controlSocket = listener.accept();
         System.out.printf("Connection made to client at address %s%n", controlSocket.getInetAddress());
-
-
-    }
-
-    public void startIrcClient(String server, int port, String nick, String auth, Collection<String> channels){
-        ircClient = new IRCClient(server, port, nick, auth, channels);
-        ircClient.start();
     }
 }
