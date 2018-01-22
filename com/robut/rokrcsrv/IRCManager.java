@@ -2,6 +2,7 @@ package com.robut.rokrcsrv;
 
 import com.robut.rirc.IRCClient;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,10 +23,14 @@ public class IRCManager {
 
     public void connectToIrcServer(String server, int port, String nick, String auth, Collection<String> channels){
         if (!ircServers.containsKey(server)){
-            MarkovPrivMsgHandler handler = new MarkovPrivMsgHandler(this.dbDir);
+            File serverDbDir = new File(this.dbDir + File.separator + server);
+            serverDbDir.mkdirs();
+
+            MarkovPrivMsgHandler handler = new MarkovPrivMsgHandler(serverDbDir);
             serverMsgHandlers.put(server, handler);
             ircServers.put(server, new IRCClient(server, port, nick, auth, channels, handler));
             ircServers.get(server).startThread();
+            serverMsgHandlers.get(server).addChannels(channels);
         }
     }
 
@@ -36,6 +41,7 @@ public class IRCManager {
     public void joinChannel(String server, String channel) throws IOException{
         try {
             ircServers.get(server).joinChannel(channel);
+            serverMsgHandlers.get(server).addChannel(channel);
         }
         catch (IOException e){
             System.err.printf("Error connecting to channel through rokrcsrv IRCManager: %s%n", e);
@@ -43,7 +49,7 @@ public class IRCManager {
         }
     }
 
-    public String generateMarkovString(String server, String channel){
+    public String generateMarkovString(String server, String channel) throws IRCManagerException{
         return serverMsgHandlers.get(server).generateMarkovMessage(channel);
     }
 }

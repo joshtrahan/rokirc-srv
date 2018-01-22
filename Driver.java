@@ -17,12 +17,11 @@
 
  */
 
-import com.robut.rokrcsrv.ControllerServer;
 import com.robut.rokrcsrv.IRCManager;
+import com.robut.rokrcsrv.IRCManagerException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -56,5 +55,13 @@ public class Driver {
     public static void testIrcManager(String server, int port, String nick, String auth, Collection<String> channels){
         IRCManager ircManager = new IRCManager("resources/dbs/");
         ircManager.connectToIrcServer(server, port, nick, auth, channels);
+
+        for (String chan : channels) {
+            try {
+                System.out.printf("%s: %s%n", chan, ircManager.generateMarkovString(server, chan));
+            } catch (IRCManagerException e) {
+                System.err.printf("Error generating message: %s%n", e);
+            }
+        }
     }
 }
