@@ -57,7 +57,20 @@ public class IRCManager {
         connectToIrcServer(server, port, nick, auth, new ArrayList<>());
     }
 
-    public void joinChannel(String server, String channel) throws IOException{
+    public void leaveIrcServer(String server){
+        if (ircServers.containsKey(server)){
+            try {
+                ircServers.get(server).disconnect();
+                ircServers.remove(server);
+                serverMsgHandlers.remove(server);
+            }
+            catch (IOException e){
+                System.err.printf("Error leaving server %s: %s%n", server, e);
+            }
+        }
+    }
+
+    public void joinChannel(String server, String channel) throws IOException {
         try {
             ircServers.get(server).joinChannel(channel);
             serverMsgHandlers.get(server).addChannel(channel);
@@ -66,6 +79,10 @@ public class IRCManager {
             System.err.printf("Error connecting to channel through rokrcsrv IRCManager: %s%n", e);
             throw e;
         }
+    }
+
+    public void leaveChannel(String server, String channel) throws IOException {
+
     }
 
     public String generateMarkovString(String server, String channel) throws IRCManagerException{

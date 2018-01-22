@@ -17,11 +17,13 @@
 
  */
 
+import com.robut.rokrcsrv.ControllerServer;
 import com.robut.rokrcsrv.IRCManager;
 import com.robut.rokrcsrv.IRCManagerException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -39,8 +41,8 @@ public class Driver {
                 channels = Arrays.copyOfRange(args, 2, args.length);
             }
 
-            try (BufferedReader credFile = new BufferedReader(new FileReader("resources/creds.txt"))) {
-                userName = credFile.readLine();
+            try (BufferedReader credFile = new BufferedReader(new FileReader("creds/r0but/irc.chat.twitch.tv"))) {
+                userName = "r0but";
                 auth = credFile.readLine();
                 credFile.close();
             } catch (Exception e) {
@@ -49,6 +51,19 @@ public class Driver {
             }
 
             testIrcManager(server, port, userName, auth, Arrays.asList(channels));
+        }
+        else if (args.length == 0){
+            testControllerServer();
+        }
+    }
+
+    public static void testControllerServer(){
+        ControllerServer server = new ControllerServer(20049, "dbs/", "127.0.0.1");
+        try {
+            server.startServer();
+        }
+        catch (IOException e){
+            System.err.printf("Error starting server: %s%n", e);
         }
     }
 

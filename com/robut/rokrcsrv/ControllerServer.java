@@ -51,5 +51,13 @@ public class ControllerServer {
 
         Socket controlSocket = listener.accept();
         System.out.printf("Connection made to client at address %s%n", controlSocket.getInetAddress());
+
+        try {
+            ControllerInstance controller = new ControllerInstance(controlSocket, this.ircManager);
+            controller.run();
+        }
+        catch (IOException e){
+            System.err.printf("Error creating controller: %s%n", e);
+        }
     }
 }

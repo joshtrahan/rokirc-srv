@@ -20,17 +20,243 @@
 package com.robut.rokrcsrv;
 
 import java.io.*;
+import java.net.Socket;
 
-public class ControllerInstance {
+public class ControllerInstance implements Runnable {
+    private Socket sock;
     private BufferedReader sockIn;
     private DataOutputStream sockOut;
 
     private IRCManager ircManager;
 
-    public ControllerInstance(IRCManager ircManager, DataInputStream sockIn, DataOutputStream sockOut){
-        this.sockIn = new BufferedReader(new InputStreamReader(sockIn));
-        this.sockOut = new DataOutputStream(sockOut);
+    public ControllerInstance(Socket sock, IRCManager ircManager) throws IOException{
+        this.sock = sock;
+        this.sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+        this.sockOut = new DataOutputStream(sock.getOutputStream());
 
         this.ircManager = ircManager;
+    }
+
+    public void run(){
+        while(this.sock.isConnected()){
+            String msg = "";
+            try {
+                msg = sockIn.readLine();
+            }
+            catch (IOException e){
+                System.err.printf("Error receiving command: %s%n");
+                continue;
+            }
+
+            if (msg == null || msg.isEmpty()){
+                continue;
+            }
+            String[] tokens = msg.split(" ", 2);
+            String cmd = tokens[0];
+            String args = tokens[1];
+
+            switch (cmd.toLowerCase()){
+                case "joinserver":
+                    joinServer(args);
+                    break;
+
+                case "leaveserver":
+                    leaveServer(args);
+                    break;
+
+                case "joinchannel":
+                    joinChannel(args);
+                    break;
+
+                case "leavechannel":
+                    leaveChannel(args);
+                    break;
+
+                case "togglechat":
+                    toggleChat(args);
+                    break;
+
+                case "genmessage":
+                    genMessage(args);
+                    break;
+
+                default:
+                    try{
+                        writeMessageToController("Invalid argument. Valid arguments are: ");
+                        writeMessageToController("JoinServer, LeaveServer, JoinChannel, LeaveChannel, ToggleChat, GenMessage");
+                    }
+                    catch (IOException e){
+                        System.err.printf("Error sending error message to client: %s%n", e);
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    private void joinServer(String args){
+        String[] argTokens = args.split(" ");
+        if (argTokens.length == 4){
+            String server = argTokens[0];
+            int port = Integer.parseInt(argTokens[1]);
+            String nick = argTokens[2];
+            String auth = argTokens[3];
+
+            if (auth == null || auth == ""){
+
+            }
+        }
+        else{
+            try {
+                writeMessageToController("Error: Incorrect number of arguments.");
+                writeMessageToController("Usage: JoinServer server port nick auth");
+            }
+            catch(IOException e){
+                System.err.printf("Error sending error to client: %s%n", e);
+            }
+        }
+    }
+
+    private void leaveServer(String args){
+        String[] argTokens = args.split(" ");
+        if (argTokens.length == 1){
+            ircManager.leaveIrcServer(argTokens[0]);
+        }
+        else{
+            try{
+                writeMessageToController("Error: Incorrect number of arguments.");
+                writeMessageToController("Usage: LeaveServer server");
+            }
+            catch(IOException e){
+                System.err.printf("Error sending error to client: %s%n", e);
+            }
+        }
+    }
+
+    private void joinChannel(String args){
+        String[] argTokens = args.split(" ");
+        if (argTokens.length == 2){
+            String server = argTokens[0];
+            String channel = argTokens[1];
+
+            try {
+                ircManager.joinChannel(server, channel);
+            }
+            catch (IOException e){
+                System.err.printf("Error joining channel: %s%n", e);
+                try {
+                    writeMessageToController("Error joining channel: " + e);
+                }
+                catch (IOException e2){
+                    System.err.printf("Error sending error to client: %s%n", e2);
+                }
+            }
+        }
+        else{
+            try{
+                writeMessageToController("Error: Incorrect number of arguments.");
+                writeMessageToController("Usage: JoinChannel server channel");
+            }
+            catch(IOException e){
+                System.err.printf("Error sending error to client: %s%n", e);
+            }
+        }
+    }
+
+    private void leaveChannel(String args){
+        try{
+            writeMessageToController("Sorry, this isn't implemented yet.");
+        }
+        catch(IOException e){
+            System.err.printf("Error sending error to client: %s%n", e);
+        }
+
+/*
+        String[] argTokens = args.split(" ");
+        if (argTokens.length == 2){
+            String server = argTokens[0];
+            String channel = argTokens[1];
+
+            try {
+                ircManager.leaveChannel(server, channel);
+            }
+            catch (IOException e){
+                System.err.printf("Error leaving channel: %s%n", e);
+                try {
+                    writeMessageToController("Error leaving channel: " + e);
+                }
+                catch (IOException e2){
+                    System.err.printf("Error sending error to client: %s%n", e2);
+                }
+            }
+        }
+        else{
+            try{
+                writeMessageToController("Error: Incorrect number of arguments.");
+                writeMessageToController("Usage: LeaveChannel server channel");
+            }
+            catch(IOException e){
+                System.err.printf("Error sending error to client: %s%n", e);
+            }
+        }
+        */
+    }
+
+    private void toggleChat(String args){
+        try{
+            writeMessageToController("Sorry, this isn't implemented yet.");
+        }
+        catch(IOException e){
+            System.err.printf("Error sending error to client: %s%n", e);
+        }
+    }
+
+    private void genMessage(String args){
+        String[] argTokens = args.split(" ");
+
+        if (argTokens.length != 2){
+            try{
+                writeMessageToController("Error: Incorrect number of arguments.");
+                writeMessageToController("Usage: GenMessage server channel");
+            }
+            catch(IOException e){
+                System.err.printf("Error sending error to client: %s%n", e);
+            }
+
+            return;
+        }
+
+        String server = argTokens[0];
+        String channel = argTokens[1];
+
+        String markovMsg = "";
+
+        try{
+            markovMsg = ircManager.generateMarkovString(server, channel);
+        }
+        catch (IRCManagerException e){
+            System.out.printf("Error generating markov chain: %s%n");
+            try{
+                writeMessageToController("Error generating markov message: " + e);
+            }
+            catch(IOException e2){
+                System.err.printf("Error sending error to client: %s%n", e2);
+            }
+        }
+
+        if (!markovMsg.equals("")) {
+            try {
+                writeMessageToController(markovMsg);
+            } catch (IOException e) {
+                System.err.printf("Error sending generated Markov string to client: %s%n");
+            }
+        }
+    }
+
+    private void writeMessageToController(String msg) throws IOException{
+        if (msg.contains("\r\n")){
+            throw new IOException("Error: Message contains newline characters.");
+        }
+        this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
     }
 }
