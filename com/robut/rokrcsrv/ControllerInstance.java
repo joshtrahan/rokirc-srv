@@ -81,13 +81,8 @@ public class ControllerInstance implements Runnable {
                     break;
 
                 default:
-                    try{
-                        writeMessageToController("Invalid argument. Valid arguments are: ");
-                        writeMessageToController("JoinServer, LeaveServer, JoinChannel, LeaveChannel, ToggleChat, GenMessage");
-                    }
-                    catch (IOException e){
-                        System.err.printf("Error sending error message to client: %s%n", e);
-                    }
+                    writeMessageToController("Invalid argument. Valid arguments are: ");
+                    writeMessageToController("JoinServer, LeaveServer, JoinChannel, LeaveChannel, ToggleChat, GenMessage");
 
                     break;
             }
@@ -103,17 +98,15 @@ public class ControllerInstance implements Runnable {
             String auth = argTokens[3];
 
             if (auth == null || auth == ""){
-
+                    writeMessageToController("Something went wrong. Server not joined.");
+            }
+            else {
+                ircManager.connectToIrcServer(server, port, nick, auth);
             }
         }
         else{
-            try {
-                writeMessageToController("Error: Incorrect number of arguments.");
-                writeMessageToController("Usage: JoinServer server port nick auth");
-            }
-            catch(IOException e){
-                System.err.printf("Error sending error to client: %s%n", e);
-            }
+            writeMessageToController("Error: Incorrect number of arguments.");
+            writeMessageToController("Usage: JoinServer server port nick auth");
         }
     }
 
@@ -123,13 +116,8 @@ public class ControllerInstance implements Runnable {
             ircManager.leaveIrcServer(argTokens[0]);
         }
         else{
-            try{
-                writeMessageToController("Error: Incorrect number of arguments.");
-                writeMessageToController("Usage: LeaveServer server");
-            }
-            catch(IOException e){
-                System.err.printf("Error sending error to client: %s%n", e);
-            }
+            writeMessageToController("Error: Incorrect number of arguments.");
+            writeMessageToController("Usage: LeaveServer server");
         }
     }
 
@@ -144,32 +132,21 @@ public class ControllerInstance implements Runnable {
             }
             catch (IOException e){
                 System.err.printf("Error joining channel: %s%n", e);
-                try {
-                    writeMessageToController("Error joining channel: " + e);
-                }
-                catch (IOException e2){
-                    System.err.printf("Error sending error to client: %s%n", e2);
-                }
+                writeMessageToController("Error joining channel: " + e);
+            }
+            catch (IRCManagerException e){
+                System.err.printf("Error joining channel: %s%n", e);
+                writeMessageToController("Server not yet joined.");
             }
         }
         else{
-            try{
-                writeMessageToController("Error: Incorrect number of arguments.");
-                writeMessageToController("Usage: JoinChannel server channel");
-            }
-            catch(IOException e){
-                System.err.printf("Error sending error to client: %s%n", e);
-            }
+            writeMessageToController("Error: Incorrect number of arguments.");
+            writeMessageToController("Usage: JoinChannel server channel");
         }
     }
 
     private void leaveChannel(String args){
-        try{
-            writeMessageToController("Sorry, this isn't implemented yet.");
-        }
-        catch(IOException e){
-            System.err.printf("Error sending error to client: %s%n", e);
-        }
+        writeMessageToController("Sorry, this isn't implemented yet.");
 
 /*
         String[] argTokens = args.split(" ");
@@ -203,25 +180,15 @@ public class ControllerInstance implements Runnable {
     }
 
     private void toggleChat(String args){
-        try{
-            writeMessageToController("Sorry, this isn't implemented yet.");
-        }
-        catch(IOException e){
-            System.err.printf("Error sending error to client: %s%n", e);
-        }
+        writeMessageToController("Sorry, this isn't implemented yet.");
     }
 
     private void genMessage(String args){
         String[] argTokens = args.split(" ");
 
         if (argTokens.length != 2){
-            try{
-                writeMessageToController("Error: Incorrect number of arguments.");
-                writeMessageToController("Usage: GenMessage server channel");
-            }
-            catch(IOException e){
-                System.err.printf("Error sending error to client: %s%n", e);
-            }
+            writeMessageToController("Error: Incorrect number of arguments.");
+            writeMessageToController("Usage: GenMessage server channel");
 
             return;
         }
@@ -236,27 +203,21 @@ public class ControllerInstance implements Runnable {
         }
         catch (IRCManagerException e){
             System.out.printf("Error generating markov chain: %s%n");
-            try{
-                writeMessageToController("Error generating markov message: " + e);
-            }
-            catch(IOException e2){
-                System.err.printf("Error sending error to client: %s%n", e2);
-            }
+            writeMessageToController("Error generating markov message: " + e);
+
         }
 
         if (!markovMsg.equals("")) {
-            try {
-                writeMessageToController(markovMsg);
-            } catch (IOException e) {
-                System.err.printf("Error sending generated Markov string to client: %s%n");
-            }
+            writeMessageToController(markovMsg);
         }
     }
 
-    private void writeMessageToController(String msg) throws IOException{
-        if (msg.contains("\r\n")){
-            throw new IOException("Error: Message contains newline characters.");
+    private void writeMessageToController(String msg) {
+        try {
+            this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
         }
-        this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
+        catch (IOException e){
+            System.err.printf("Error writing message %s: %s%n", msg, e);
+        }
     }
 }

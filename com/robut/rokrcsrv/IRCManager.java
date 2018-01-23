@@ -70,14 +70,19 @@ public class IRCManager {
         }
     }
 
-    public void joinChannel(String server, String channel) throws IOException {
+    public void joinChannel(String server, String channel) throws IOException, IRCManagerException {
         try {
+            System.out.printf("Joining channel: %s - %s%n", server, channel);
             ircServers.get(server).joinChannel(channel);
             serverMsgHandlers.get(server).addChannel(channel);
         }
         catch (IOException e){
             System.err.printf("Error connecting to channel through rokrcsrv IRCManager: %s%n", e);
             throw e;
+        }
+        catch (NullPointerException e){
+            System.err.printf("Error: Not connected to server %s to join channel %s%n", server, channel);
+            throw new IRCManagerException("Server not connected.");
         }
     }
 
