@@ -39,7 +39,7 @@ public class ControllerInstance implements Runnable {
 
     public void run(){
         while(this.sock.isConnected()){
-            String msg = "";
+            String msg;
             try {
                 msg = sockIn.readLine();
             }
@@ -98,7 +98,7 @@ public class ControllerInstance implements Runnable {
             String auth = argTokens[3];
 
             if (auth == null || auth == ""){
-                    writeMessageToController("Something went wrong. Server not joined.");
+                writeMessageToController("Something went wrong. Server not joined.");
             }
             else {
                 ircManager.connectToIrcServer(server, port, nick, auth);
@@ -206,6 +206,8 @@ public class ControllerInstance implements Runnable {
             writeMessageToController("Error generating markov message: " + e);
 
         }
+
+        System.out.printf("Generating message. Server: %s Channel: %s Message: %s%n", server, channel, markovMsg);
 
         if (!markovMsg.equals("")) {
             writeMessageToController(markovMsg);

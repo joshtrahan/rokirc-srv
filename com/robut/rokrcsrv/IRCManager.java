@@ -47,9 +47,11 @@ public class IRCManager {
 
             MarkovPrivMsgHandler handler = new MarkovPrivMsgHandler(serverDbDir);
             serverMsgHandlers.put(server, handler);
-            ircServers.put(server, new IRCClient(server, port, nick, auth, channels, handler));
+            ircServers.put(server, new IRCClient(server, port, nick, auth, handler));
             ircServers.get(server).startThread();
-            serverMsgHandlers.get(server).addChannels(channels);
+            for (String channel : channels){
+                serverMsgHandlers.get(server).addChannel(channel);
+            }
         }
     }
 

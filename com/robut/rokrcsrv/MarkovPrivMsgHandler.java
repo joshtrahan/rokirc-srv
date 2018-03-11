@@ -58,14 +58,14 @@ public class MarkovPrivMsgHandler implements PrivMsgHandler {
         }
     }
 
-    public void addChannel(String channel){
+    public synchronized void addChannel(String channel){
         if (!chains.containsKey(channel)){
             chains.put(channel, new MarkovChain(dbDirPath + File.separator + channel + ".sqlite3"));
         }
     }
 
-    public void handleNewMessage(PrivMsg msg){
-        System.out.printf("New message receieved: %s%n", msg);
+    public synchronized void handleNewMessage(PrivMsg msg){
+        System.out.printf("Msg received.%n");
         if (!chains.containsKey(msg.getChannel())){
             addChannel(msg.getChannel());
         }
@@ -74,7 +74,7 @@ public class MarkovPrivMsgHandler implements PrivMsgHandler {
         chains.get(msg.getChannel()).saveToDisk();
     }
 
-    public String generateMarkovMessage(String channel) throws IRCManagerException{
+    public synchronized String generateMarkovMessage(String channel) throws IRCManagerException{
         if (chains.get(channel) != null) {
             return chains.get(channel).generateString();
         }
