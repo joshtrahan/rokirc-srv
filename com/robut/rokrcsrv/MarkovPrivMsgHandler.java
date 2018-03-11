@@ -43,21 +43,6 @@ public class MarkovPrivMsgHandler implements PrivMsgHandler {
         this(new File(dbDirPath));
     }
 
-    public MarkovPrivMsgHandler(File dbDirPath, Collection<String> channels){
-        this.dbDirPath = dbDirPath;
-        addChannels(channels);
-    }
-
-    public MarkovPrivMsgHandler(String dbDirPath, Collection<String> channels){
-        this(new File(dbDirPath), channels);
-    }
-
-    public void addChannels(Collection<String> channels){
-        for (String chan : channels){
-            addChannel(chan);
-        }
-    }
-
     public synchronized void addChannel(String channel){
         if (!chains.containsKey(channel)){
             chains.put(channel, new MarkovChain(dbDirPath + File.separator + channel + ".sqlite3"));
