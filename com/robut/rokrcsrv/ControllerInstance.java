@@ -136,6 +136,7 @@ public class ControllerInstance implements Runnable {
             }
             catch (IRCManagerException e){
                 System.err.printf("Error joining channel: %s%n", e);
+                e.printStackTrace();
                 writeMessageToController("Server not yet joined.");
             }
         }
