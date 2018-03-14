@@ -44,7 +44,7 @@ public class ControllerInstance implements Runnable {
                 msg = sockIn.readLine();
             }
             catch (IOException e){
-                System.err.printf("Error receiving command: %s%n");
+                System.err.printf("Error receiving command: %s%n", e);
                 continue;
             }
 
