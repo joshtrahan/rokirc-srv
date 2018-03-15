@@ -23,13 +23,14 @@ import java.io.*;
 import java.net.Socket;
 
 public class ControllerInstance implements Runnable {
+
     private Socket sock;
     private BufferedReader sockIn;
     private DataOutputStream sockOut;
 
     private IRCManager ircManager;
 
-    public ControllerInstance(Socket sock, IRCManager ircManager) throws IOException{
+    public ControllerInstance(Socket sock, IRCManager ircManager) throws IOException {
         this.sock = sock;
         this.sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         this.sockOut = new DataOutputStream(sock.getOutputStream());
@@ -37,25 +38,25 @@ public class ControllerInstance implements Runnable {
         this.ircManager = ircManager;
     }
 
-    public void run(){
-        while(this.sock.isConnected()){
+    public void run() {
+
+        while (this.sock.isConnected()) {
             String msg;
             try {
                 msg = sockIn.readLine();
-            }
-            catch (IOException e){
+            } catch (IOException e) {
                 System.err.printf("Error receiving command: %s%n", e);
                 continue;
             }
 
-            if (msg == null || msg.isEmpty()){
+            if (msg == null || msg.isEmpty()) {
                 continue;
             }
             String[] tokens = msg.split(" ", 2);
             String cmd = tokens[0];
             String args = tokens[1];
 
-            switch (cmd.toLowerCase()){
+            switch (cmd.toLowerCase()) {
                 case "joinserver":
                     joinServer(args);
                     break;
@@ -89,64 +90,58 @@ public class ControllerInstance implements Runnable {
         }
     }
 
-    private void joinServer(String args){
+    private void joinServer(String args) {
         String[] argTokens = args.split(" ");
-        if (argTokens.length == 4){
+        if (argTokens.length == 4) {
             String server = argTokens[0];
             int port = Integer.parseInt(argTokens[1]);
             String nick = argTokens[2];
             String auth = argTokens[3];
 
-            if (auth == null || auth == ""){
+            if (auth == null || auth == "") {
                 writeMessageToController("Something went wrong. Server not joined.");
-            }
-            else {
+            } else {
                 ircManager.connectToIrcServer(server, port, nick, auth);
             }
-        }
-        else{
+        } else {
             writeMessageToController("Error: Incorrect number of arguments.");
             writeMessageToController("Usage: JoinServer server port nick auth");
         }
     }
 
-    private void leaveServer(String args){
+    private void leaveServer(String args) {
         String[] argTokens = args.split(" ");
-        if (argTokens.length == 1){
+        if (argTokens.length == 1) {
             ircManager.leaveIrcServer(argTokens[0]);
-        }
-        else{
+        } else {
             writeMessageToController("Error: Incorrect number of arguments.");
             writeMessageToController("Usage: LeaveServer server");
         }
     }
 
-    private void joinChannel(String args){
+    private void joinChannel(String args) {
         String[] argTokens = args.split(" ");
-        if (argTokens.length == 2){
+        if (argTokens.length == 2) {
             String server = argTokens[0];
             String channel = argTokens[1];
 
             try {
                 ircManager.joinChannel(server, channel);
-            }
-            catch (IOException e){
+            } catch (IOException e) {
                 System.err.printf("Error joining channel: %s%n", e);
                 writeMessageToController("Error joining channel: " + e);
-            }
-            catch (IRCManagerException e){
+            } catch (IRCManagerException e) {
                 System.err.printf("Error joining channel: %s%n", e);
                 e.printStackTrace();
                 writeMessageToController("Server not yet joined.");
             }
-        }
-        else{
+        } else {
             writeMessageToController("Error: Incorrect number of arguments.");
             writeMessageToController("Usage: JoinChannel server channel");
         }
     }
 
-    private void leaveChannel(String args){
+    private void leaveChannel(String args) {
         writeMessageToController("Sorry, this isn't implemented yet.");
 
 /*
@@ -180,14 +175,14 @@ public class ControllerInstance implements Runnable {
         */
     }
 
-    private void toggleChat(String args){
+    private void toggleChat(String args) {
         writeMessageToController("Sorry, this isn't implemented yet.");
     }
 
-    private void genMessage(String args){
+    private void genMessage(String args) {
         String[] argTokens = args.split(" ");
 
-        if (argTokens.length != 2){
+        if (argTokens.length != 2) {
             writeMessageToController("Error: Incorrect number of arguments.");
             writeMessageToController("Usage: GenMessage server channel");
 
@@ -199,13 +194,11 @@ public class ControllerInstance implements Runnable {
 
         String markovMsg = "";
 
-        try{
+        try {
             markovMsg = ircManager.generateMarkovString(server, channel);
-        }
-        catch (IRCManagerException e){
+        } catch (IRCManagerException e) {
             System.out.printf("Error generating markov chain: %s%n");
             writeMessageToController("Error generating markov message: " + e);
-
         }
 
         System.out.printf("Generating message. Server: %s Channel: %s Message: %s%n", server, channel, markovMsg);
@@ -218,8 +211,7 @@ public class ControllerInstance implements Runnable {
     private void writeMessageToController(String msg) {
         try {
             this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             System.err.printf("Error writing message %s: %s%n", msg, e);
         }
     }

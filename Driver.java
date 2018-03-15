@@ -28,7 +28,8 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class Driver {
-    public static void main(String[] args){
+    public static void main(String[] args) {
+
         if (args.length > 0) {
             String server = args[0];
             int port = Integer.parseInt(args[1]);
@@ -51,8 +52,7 @@ public class Driver {
             }
 
             testIrcManager(server, port, userName, auth, Arrays.asList(channels));
-        }
-        else if (args.length == 0){
+        } else if (args.length == 0) {
             testControllerServer();
         }
     }

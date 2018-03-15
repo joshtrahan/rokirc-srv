@@ -20,11 +20,12 @@
 package com.robut.rokrcsrv;
 
 public class IRCManagerException extends Exception {
-    IRCManagerException(){
+
+    IRCManagerException() {
 
     }
 
-    IRCManagerException(String msg){
+    IRCManagerException(String msg) {
         super(msg);
     }
 }

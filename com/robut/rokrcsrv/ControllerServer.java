@@ -26,6 +26,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class ControllerServer {
+
     private InetAddress bindAddr;
     private int port;
 
@@ -33,11 +34,10 @@ public class ControllerServer {
 
     private IRCManager ircManager;
 
-    public ControllerServer(int port, String dbDir, String bindAddress){
+    public ControllerServer(int port, String dbDir, String bindAddress) {
         try {
             this.bindAddr = InetAddress.getByName(bindAddress);
-        }
-        catch (UnknownHostException e){
+        } catch (UnknownHostException e) {
             System.err.printf("Error creating bind address: %s%n", e);
         }
 
@@ -55,8 +55,7 @@ public class ControllerServer {
         try {
             ControllerInstance controller = new ControllerInstance(controlSocket, this.ircManager);
             controller.run();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             System.err.printf("Error creating controller: %s%n", e);
         }
     }

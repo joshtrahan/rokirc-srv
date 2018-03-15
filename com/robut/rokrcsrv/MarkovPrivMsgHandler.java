@@ -24,6 +24,8 @@ import com.robut.rirc.PrivMsg;
 import com.robut.rirc.PrivMsgHandler;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -31,27 +33,34 @@ public class MarkovPrivMsgHandler implements PrivMsgHandler {
     private File dbDirPath;
     private HashMap<String, MarkovChain> chains = new HashMap<>();
 
-    public MarkovPrivMsgHandler(){
+    public MarkovPrivMsgHandler() {
         this("");
     }
 
-    public MarkovPrivMsgHandler(File dbDirPath){
+    public MarkovPrivMsgHandler(File dbDirPath) {
         this.dbDirPath = dbDirPath;
     }
 
-    public MarkovPrivMsgHandler(String dbDirPath){
+    public MarkovPrivMsgHandler(String dbDirPath) {
         this(new File(dbDirPath));
     }
 
-    public synchronized void addChannel(String channel){
-        if (!chains.containsKey(channel)){
-            chains.put(channel, new MarkovChain(dbDirPath + File.separator + channel + ".sqlite3"));
+    public synchronized void addChannel(String channel) {
+        if (!chains.containsKey(channel)) {
+            try {
+                chains.put(channel, new MarkovChain(dbDirPath + File.separator + channel + ".sqlite3"));
+            } catch (IOException e) {
+                System.err.printf("IO Error adding chain for channel %s: %s%n", channel, e);
+            } catch (SQLException e) {
+                System.err.printf("SQL Error adding chain for channel %s: %s%n", channel, e);
+            }
+
         }
     }
 
-    public synchronized void handleNewMessage(PrivMsg msg){
+    public synchronized void handleNewMessage(PrivMsg msg) {
         System.out.printf("Msg received.%n");
-        if (!chains.containsKey(msg.getChannel())){
+        if (!chains.containsKey(msg.getChannel())) {
             addChannel(msg.getChannel());
         }
 
@@ -59,11 +68,10 @@ public class MarkovPrivMsgHandler implements PrivMsgHandler {
         chains.get(msg.getChannel()).saveToDisk();
     }
 
-    public synchronized String generateMarkovMessage(String channel) throws IRCManagerException{
+    public synchronized String generateMarkovMessage(String channel) throws IRCManagerException {
         if (chains.get(channel) != null) {
             return chains.get(channel).generateString();
-        }
-        else{
+        } else {
             throw new IRCManagerException("Error: Markov chains aren't ready for generation yet.");
         }
     }
