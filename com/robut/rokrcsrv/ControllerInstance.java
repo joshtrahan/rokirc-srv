@@ -27,6 +27,7 @@ public class ControllerInstance implements Runnable {
     private Socket sock;
     private BufferedReader sockIn;
     private DataOutputStream sockOut;
+    private boolean clientConnected = false;
 
     private IRCManager ircManager;
 
@@ -39,13 +40,14 @@ public class ControllerInstance implements Runnable {
     }
 
     public void run() {
-
-        while (this.sock.isConnected()) {
+        this.clientConnected = true;
+        while (this.sock.isConnected() && !this.sock.isClosed() && this.hasClientConnection()) {
             String msg;
             try {
                 msg = sockIn.readLine();
             } catch (IOException e) {
                 System.err.printf("Error receiving command: %s%n", e);
+                this.clientConnected = false;
                 continue;
             }
 
@@ -54,7 +56,12 @@ public class ControllerInstance implements Runnable {
             }
             String[] tokens = msg.split(" ", 2);
             String cmd = tokens[0];
-            String args = tokens[1];
+            String args;
+            if (tokens.length > 1) {
+                args = tokens[1];
+            } else {
+                args = "";
+            }
 
             switch (cmd.toLowerCase()) {
                 case "joinserver":
@@ -81,6 +88,10 @@ public class ControllerInstance implements Runnable {
                     genMessage(args);
                     break;
 
+                case "endsession":
+                    endSession(args);
+                    break;
+
                 default:
                     writeMessageToController("Invalid argument. Valid arguments are: ");
                     writeMessageToController("JoinServer, LeaveServer, JoinChannel, LeaveChannel, ToggleChat, GenMessage");
@@ -88,6 +99,7 @@ public class ControllerInstance implements Runnable {
                     break;
             }
         }
+        this.clientConnected = false;
     }
 
     private void joinServer(String args) {
@@ -111,7 +123,7 @@ public class ControllerInstance implements Runnable {
 
     private void leaveServer(String args) {
         String[] argTokens = args.split(" ");
-        if (argTokens.length == 1) {
+        if (argTokens.length == 1 || argTokens[0].equals("")) {
             ircManager.leaveIrcServer(argTokens[0]);
         } else {
             writeMessageToController("Error: Incorrect number of arguments.");
@@ -208,11 +220,27 @@ public class ControllerInstance implements Runnable {
         }
     }
 
+    private void endSession(String args){
+        writeMessageToController("Terminating connection. IRC manager will keep listening in the meantime.");
+        try {
+            this.sock.close();
+        } catch (IOException e) {
+            System.err.printf("Error closing socket for address %s: %s%n", this.sock.getInetAddress().getHostAddress(),
+                    e);
+            writeMessageToController("Error closing socket. If you see this, something is weird.");
+        }
+        this.clientConnected = false;
+    }
+
     private void writeMessageToController(String msg) {
         try {
             this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
         } catch (IOException e) {
             System.err.printf("Error writing message %s: %s%n", msg, e);
         }
+    }
+
+    public boolean hasClientConnection() {
+        return this.clientConnected;
     }
 }

@@ -19,11 +19,13 @@
 
 package com.robut.rokrcsrv;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 public class ControllerServer {
 
@@ -32,31 +34,59 @@ public class ControllerServer {
 
     private String dbDir;
 
-    private IRCManager ircManager;
+    private HashMap<String, IRCManager> ircManagers = new HashMap<>();
+    private HashMap<String, ControllerInstance> controllerInstances = new HashMap<>();
 
-    public ControllerServer(int port, String dbDir, String bindAddress) {
+    public ControllerServer(int port, String serverDbDir, String bindAddress) {
         try {
             this.bindAddr = InetAddress.getByName(bindAddress);
         } catch (UnknownHostException e) {
             System.err.printf("Error creating bind address: %s%n", e);
         }
 
+        dbDir = serverDbDir;
+
         this.port = port;
-        this.ircManager = new IRCManager(dbDir);
     }
 
     public void startServer() throws IOException {
         ServerSocket listener = new ServerSocket(this.port, 50, this.bindAddr);
-        System.out.printf("Listening on port %d bound on %s%n", this.port, this.bindAddr);
+        while (true) {
+            System.out.printf("Listening on port %d bound on %s%n", listener.getLocalPort(),
+                    listener.getLocalSocketAddress());
 
-        Socket controlSocket = listener.accept();
-        System.out.printf("Connection made to client at address %s%n", controlSocket.getInetAddress());
+            Socket controlSocket = listener.accept();
+            System.out.printf("Connection made to client at address %s%n", controlSocket.getInetAddress());
 
-        try {
-            ControllerInstance controller = new ControllerInstance(controlSocket, this.ircManager);
-            controller.run();
-        } catch (IOException e) {
-            System.err.printf("Error creating controller: %s%n", e);
+            IRCManager clientManager;
+            String clientAddress = controlSocket.getInetAddress().getHostAddress();
+            if (controllerInstances.containsKey(clientAddress) &&
+                    controllerInstances.get(clientAddress).hasClientConnection()){
+                System.err.printf("Error: Client at %s attempted a second connection. Closing socket.%n",
+                        clientAddress);
+                controlSocket.close();
+                continue;
+            }
+
+            if (!ircManagers.containsKey(clientAddress)) {
+                clientManager = new IRCManager(dbDir + File.separator + clientAddress);
+                ircManagers.put(clientAddress, clientManager);
+            } else {
+                clientManager = ircManagers.get(clientAddress);
+            }
+
+            ControllerInstance controller;
+            try {
+                controller = new ControllerInstance(controlSocket, clientManager);
+            } catch (IOException e) {
+                System.err.printf("Error creating controller for client %s: %s%n", clientAddress, e);
+                return;
+            }
+
+            controllerInstances.put(clientAddress, controller);
+            Thread controllerThread = new Thread(controller);
+            controllerThread.setDaemon(false);
+            controllerThread.start();
         }
     }
 }
