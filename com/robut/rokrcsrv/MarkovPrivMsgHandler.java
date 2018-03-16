@@ -26,7 +26,6 @@ import com.robut.rirc.PrivMsgHandler;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
 
 public class MarkovPrivMsgHandler implements PrivMsgHandler {

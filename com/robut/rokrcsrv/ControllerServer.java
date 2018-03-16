@@ -37,7 +37,7 @@ public class ControllerServer {
     private HashMap<String, IRCManager> ircManagers = new HashMap<>();
     private HashMap<String, ControllerInstance> controllerInstances = new HashMap<>();
 
-    public ControllerServer(int port, String serverDbDir, String bindAddress) {
+    public ControllerServer(String bindAddress, int port, String serverDbDir) {
         try {
             this.bindAddr = InetAddress.getByName(bindAddress);
         } catch (UnknownHostException e) {

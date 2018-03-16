@@ -21,44 +21,19 @@ import com.robut.rokrcsrv.ControllerServer;
 import com.robut.rokrcsrv.IRCManager;
 import com.robut.rokrcsrv.IRCManagerException;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 
 public class Driver {
     public static void main(String[] args) {
 
-        if (args.length > 0) {
-            String server = args[0];
-            int port = Integer.parseInt(args[1]);
-            String[] channels = new String[0];
-
-            String userName;
-            String auth;
-
-            if (args.length > 2) {
-                channels = Arrays.copyOfRange(args, 2, args.length);
-            }
-
-            try (BufferedReader credFile = new BufferedReader(new FileReader("creds/r0but/irc.chat.twitch.tv"))) {
-                userName = "r0but";
-                auth = credFile.readLine();
-                credFile.close();
-            } catch (Exception e) {
-                System.err.printf("Exception reading credentials: %s%n", e);
-                return;
-            }
-
-            testIrcManager(server, port, userName, auth, Arrays.asList(channels));
-        } else if (args.length == 0) {
-            testControllerServer();
+        if (args.length == 2){
+            testControllerServer(args[0], Integer.parseInt(args[1]));
         }
     }
 
-    public static void testControllerServer(){
-        ControllerServer server = new ControllerServer(20049, "dbs/", "127.0.0.1");
+    public static void testControllerServer(String bindAddr, int port){
+        ControllerServer server = new ControllerServer(bindAddr, port, "dbs/");
         try {
             server.startServer();
         }
