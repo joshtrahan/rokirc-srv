@@ -19,8 +19,7 @@
 
 package com.robut.rokrcsrv;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -33,6 +32,8 @@ public class ControllerServer {
     private int port;
 
     private String dbDir;
+
+    private String logFile = "log.txt";
 
     private HashMap<String, IRCManager> ircManagers = new HashMap<>();
     private HashMap<String, ControllerInstance> controllerInstances = new HashMap<>();
@@ -65,6 +66,7 @@ public class ControllerServer {
                 System.err.printf("Error: Client at %s attempted a second connection. Closing socket.%n",
                         clientAddress);
                 controlSocket.close();
+                logConnection(clientAddress, false);
                 continue;
             }
 
@@ -83,10 +85,26 @@ public class ControllerServer {
                 return;
             }
 
+            logConnection(clientAddress, true);
             controllerInstances.put(clientAddress, controller);
             Thread controllerThread = new Thread(controller);
             controllerThread.setDaemon(false);
             controllerThread.start();
         }
+    }
+
+    private void logConnection(String ip, boolean successful) {
+        String result = (successful) ? "accpeted" : "rejected";
+        try {
+            PrintWriter writer = new PrintWriter(logFile, "UTF-8");
+            writer.printf("Connection initiated from %s: %s%n", ip, result);
+        } catch (FileNotFoundException e) {
+            System.err.printf("Error: Log file not found: %s%n", e);
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            System.err.printf("Error: Unsupported encoding for log file: %s%n", e);
+            e.printStackTrace();
+        }
+
     }
 }
