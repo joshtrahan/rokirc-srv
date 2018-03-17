@@ -27,7 +27,7 @@ import java.util.Collection;
 public class Driver {
     public static void main(String[] args) {
 
-        if (args.length == 3){
+        if (args.length == 4){
             testControllerServer(args[0], Integer.parseInt(args[1]), args[2], args[3]);
         }
     }
