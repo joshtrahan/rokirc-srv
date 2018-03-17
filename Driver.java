@@ -27,13 +27,13 @@ import java.util.Collection;
 public class Driver {
     public static void main(String[] args) {
 
-        if (args.length == 2){
-            testControllerServer(args[0], Integer.parseInt(args[1]));
+        if (args.length == 3){
+            testControllerServer(args[0], Integer.parseInt(args[1]), args[2], args[3]);
         }
     }
 
-    public static void testControllerServer(String bindAddr, int port){
-        ControllerServer server = new ControllerServer(bindAddr, port, "dbs/");
+    public static void testControllerServer(String bindAddr, int port, String dbDir ,String logFile){
+        ControllerServer server = new ControllerServer(bindAddr, port, dbDir, logFile);
         try {
             server.startServer();
         }

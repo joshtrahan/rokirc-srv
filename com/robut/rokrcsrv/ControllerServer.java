@@ -38,7 +38,7 @@ public class ControllerServer {
     private HashMap<String, IRCManager> ircManagers = new HashMap<>();
     private HashMap<String, ControllerInstance> controllerInstances = new HashMap<>();
 
-    public ControllerServer(String bindAddress, int port, String serverDbDir) {
+    public ControllerServer(String bindAddress, int port, String serverDbDir, String logFilePath) {
         try {
             this.bindAddr = InetAddress.getByName(bindAddress);
         } catch (UnknownHostException e) {
@@ -47,6 +47,7 @@ public class ControllerServer {
         }
 
         dbDir = serverDbDir;
+        logFile = logFilePath;
 
         this.port = port;
     }
@@ -98,8 +99,9 @@ public class ControllerServer {
     private void logConnection(String ip, boolean successful) {
         String result = (successful) ? "accpeted" : "rejected";
         try {
-            PrintWriter writer = new PrintWriter(logFile, "UTF-8");
+            PrintWriter writer = new PrintWriter("~" + File.separator + logFile, "UTF-8");
             writer.printf("Connection initiated from %s: %s%n", ip, result);
+            writer.flush();
         } catch (FileNotFoundException e) {
             System.err.printf("Error: Log file not found: %s%n", e);
             e.printStackTrace();
