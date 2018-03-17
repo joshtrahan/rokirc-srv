@@ -43,6 +43,7 @@ public class ControllerServer {
             this.bindAddr = InetAddress.getByName(bindAddress);
         } catch (UnknownHostException e) {
             System.err.printf("Error creating bind address: %s%n", e);
+            e.printStackTrace();
         }
 
         dbDir = serverDbDir;
@@ -82,6 +83,7 @@ public class ControllerServer {
                 controller = new ControllerInstance(controlSocket, clientManager);
             } catch (IOException e) {
                 System.err.printf("Error creating controller for client %s: %s%n", clientAddress, e);
+                e.printStackTrace();
                 return;
             }
 

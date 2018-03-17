@@ -50,8 +50,10 @@ public class MarkovPrivMsgHandler implements PrivMsgHandler {
                 chains.put(channel, new MarkovChain(dbDirPath + File.separator + channel + ".sqlite3"));
             } catch (IOException e) {
                 System.err.printf("IO Error adding chain for channel %s: %s%n", channel, e);
+                e.printStackTrace();
             } catch (SQLException e) {
                 System.err.printf("SQL Error adding chain for channel %s: %s%n", channel, e);
+                e.printStackTrace();
             }
 
         }

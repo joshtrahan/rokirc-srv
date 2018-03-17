@@ -146,6 +146,7 @@ public class ControllerInstance implements Runnable {
                 System.err.printf("Error joining channel: %s%n", e);
                 e.printStackTrace();
                 writeMessageToController("Server not yet joined.");
+                e.printStackTrace();
             }
         } else {
             writeMessageToController("Error: Incorrect number of arguments.");
@@ -211,6 +212,7 @@ public class ControllerInstance implements Runnable {
         } catch (IRCManagerException e) {
             System.out.printf("Error generating markov chain: %s%n");
             writeMessageToController("Error generating markov message: " + e);
+            e.printStackTrace();
         }
 
         System.out.printf("Generating message. Server: %s Channel: %s Message: %s%n", server, channel, markovMsg);
@@ -227,6 +229,7 @@ public class ControllerInstance implements Runnable {
         } catch (IOException e) {
             System.err.printf("Error closing socket for address %s: %s%n", this.sock.getInetAddress().getHostAddress(),
                     e);
+            e.printStackTrace();
             writeMessageToController("Error closing socket. If you see this, something is weird.");
         }
         this.clientConnected = false;
@@ -237,6 +240,7 @@ public class ControllerInstance implements Runnable {
             this.sockOut.write((msg + "\r\n").getBytes("UTF-8"));
         } catch (IOException e) {
             System.err.printf("Error writing message %s: %s%n", msg, e);
+            e.printStackTrace();
         }
     }
 

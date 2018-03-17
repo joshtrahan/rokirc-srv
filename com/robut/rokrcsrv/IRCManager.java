@@ -68,6 +68,7 @@ public class IRCManager {
                 serverMsgHandlers.remove(server);
             } catch (IOException e) {
                 System.err.printf("Error leaving server %s: %s%n", server, e);
+                e.printStackTrace();
             }
         }
     }

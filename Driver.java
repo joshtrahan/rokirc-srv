@@ -39,6 +39,7 @@ public class Driver {
         }
         catch (IOException e){
             System.err.printf("Error starting server: %s%n", e);
+            e.printStackTrace();
         }
     }
 
@@ -51,6 +52,7 @@ public class Driver {
                 System.out.printf("%s: %s%n", chan, ircManager.generateMarkovString(server, chan));
             } catch (IRCManagerException e) {
                 System.err.printf("Error generating message: %s%n", e);
+                e.printStackTrace();
             }
         }
     }
