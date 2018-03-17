@@ -99,7 +99,7 @@ public class ControllerServer {
     private void logConnection(String ip, boolean successful) {
         String result = (successful) ? "accpeted" : "rejected";
         try {
-            PrintWriter writer = new PrintWriter("~" + File.separator + logFile, "UTF-8");
+            PrintWriter writer = new PrintWriter(logFile, "UTF-8");
             writer.printf("Connection initiated from %s: %s%n", ip, result);
             writer.flush();
         } catch (FileNotFoundException e) {
