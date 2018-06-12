@@ -80,8 +80,8 @@ public class ControllerInstance implements Runnable {
                     leaveChannel(args);
                     break;
 
-                case "togglechat":
-                    toggleChat(args);
+                case "setchat":
+                    setChat(args);
                     break;
 
                 case "genmessage":
@@ -188,7 +188,7 @@ public class ControllerInstance implements Runnable {
         */
     }
 
-    private void toggleChat(String args) {
+    private void setChat(String args) {
         writeMessageToController("Sorry, this isn't implemented yet.");
     }
 
