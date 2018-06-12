@@ -88,7 +88,10 @@ public class IRCManager {
     }
 
     public void leaveChannel(String server, String channel) throws IOException {
-
+        try {
+            System.out.printf("Leaving channel: %s - %s%n", server, channel);
+            ircServers.get(server).leaveChannel(channel);
+        }
     }
 
     public String generateMarkovString(String server, String channel) throws IRCManagerException {
